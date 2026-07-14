@@ -83,36 +83,49 @@ class CapabilityTest extends TestCase {
 		$fqcn = '\\EDDCoreTables\\Schemas\\' . $tmp_class;
 		$body = ( new $fqcn() )->get_create_table_string();
 
-		$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
+		/*
+		 * WP_UnitTestCase installs a `query` filter that rewrites CREATE/DROP TABLE into
+		 * their TEMPORARY forms, and temporary tables are invisible to SHOW TABLES and
+		 * information_schema (what the generator reads back). Drop those filters so the
+		 * scratch table is real and introspectable, then always restore them and drop it.
+		 */
+		remove_filter( 'query', array( $this, '_create_temporary_tables' ) );
+		remove_filter( 'query', array( $this, '_drop_temporary_tables' ) );
 
-		$error = '';
 		try {
-			$result = $wpdb->query( "CREATE TABLE `{$scratch}` ( {$body} )" );
-			if ( false === $result ) {
-				$error = $wpdb->last_error;
+			$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
+
+			$error = '';
+			try {
+				$result = $wpdb->query( "CREATE TABLE `{$scratch}` ( {$body} )" );
+				if ( false === $result ) {
+					$error = $wpdb->last_error;
+				}
+			} catch ( \Throwable $e ) {
+				$error = $e->getMessage();
 			}
-		} catch ( \Throwable $e ) {
-			$error = $e->getMessage();
+
+			$this->assertNotEmpty(
+				$wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $scratch ) ),
+				"core's CREATE for {$live} was rejected: {$error}\nDDL:\n{$body}"
+			);
+
+			// 3. Re-introspect the scratch table the same way and compare.
+			$norm = static function ( string $src ) use ( $live, $scratch ): string {
+				return str_replace( array( $live, $scratch ), 'TABLE', $src );
+			};
+			$src_scratch = $generator->generate( $scratch, $tmp_class );
+
+			$this->assertSame(
+				$norm( $src_live ),
+				$norm( $src_scratch ),
+				"berlindb/core cannot reproduce {$live} exactly (e.g. decimal scale, core#244)."
+			);
+		} finally {
+			$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
+			add_filter( 'query', array( $this, '_create_temporary_tables' ) );
+			add_filter( 'query', array( $this, '_drop_temporary_tables' ) );
 		}
-
-		$this->assertNotEmpty(
-			$wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $scratch ) ),
-			"core's CREATE for {$live} was rejected: {$error}\nDDL:\n{$body}"
-		);
-
-		// 3. Re-introspect the scratch table the same way and compare.
-		$norm = static function ( string $src ) use ( $live, $scratch ): string {
-			return str_replace( array( $live, $scratch ), 'TABLE', $src );
-		};
-		$src_scratch = $generator->generate( $scratch, $tmp_class );
-
-		$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
-
-		$this->assertSame(
-			$norm( $src_live ),
-			$norm( $src_scratch ),
-			"berlindb/core cannot reproduce {$live} exactly (e.g. decimal scale, core#244)."
-		);
 	}
 
 	/**
