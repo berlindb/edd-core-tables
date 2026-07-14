@@ -1,8 +1,15 @@
 # edd-core-tables
 
+![EDD readiness](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/berlindb/edd-core-tables/master/.readiness/edd.json)
+
 Easy Digital Downloads' core database tables, expressed as [`berlindb/core`](https://github.com/berlindb/core)
 schemas - **auto-generated** by introspecting a live EDD install, and continuously
 tested to measure whether today's shared BerlinDB can faithfully reproduce them.
+
+The **readiness** badge above is the *behavioral* score: of the per-column flags EDD's
+fork declares (`sortable`, `searchable`, `in`, `compare`, ...), how many shared
+`berlindb/core` can express. Computed by [berlindb/readiness](https://github.com/berlindb/readiness);
+a gap is a concrete item on the path to reunifying EDD onto shared core.
 
 ## Why this exists
 
