@@ -2,13 +2,20 @@
 /**
  * Capability / parity test: can berlindb/core faithfully reproduce EDD's tables?
  *
- * For each committed Schema, core creates a scratch table from it; that table is then
- * re-introspected and compared, column-for-column and index-for-index, against EDD's
- * live table. A match means today's core can express that EDD table exactly.
+ * For each EDD table it introspects the LIVE table (in this environment's own engine),
+ * has core create a scratch table from that introspected schema, re-introspects the
+ * scratch table with the same generator, and compares. A match means core can express
+ * that EDD table exactly.
  *
- * STRICT: there is no known-gaps allowlist. Any column or index core cannot reproduce
- * turns the suite red. (Presently red on the money decimals - core cannot express
- * decimal(P,S) scale; berlindb/core#244.)
+ * Introspecting live (rather than trusting the committed src/Schemas snapshot) keeps the
+ * signal to REAL core gaps: both sides use the same engine and the same generator, so an
+ * engine difference between where the snapshot was generated and where CI runs cannot
+ * masquerade as a core gap.
+ *
+ * STRICT: no allowlist. Any column or index core cannot reproduce turns the suite red.
+ * (Presently red on the money decimals - core cannot express decimal(P,S) scale,
+ * berlindb/core#244 - and any NOT NULL TEXT/BLOB column, where core forces a DEFAULT
+ * that MySQL rejects.)
  *
  * @package EDDCoreTables\Tests
  */
@@ -35,11 +42,11 @@ class CapabilityTest extends TestCase {
 	}
 
 	/**
-	 * One case per generated schema.
+	 * One case per known EDD table.
 	 *
 	 * @return array<string, array{0: string, 1: string}>
 	 */
-	public function schema_provider(): array {
+	public function table_provider(): array {
 		$cases = array();
 		foreach ( self::manifest() as $class => $unprefixed ) {
 			$cases[ $class ] = array( $class, $unprefixed );
@@ -48,11 +55,11 @@ class CapabilityTest extends TestCase {
 	}
 
 	/**
-	 * Core must recreate each EDD table exactly as EDD declares it.
+	 * Core must recreate each live EDD table exactly.
 	 *
-	 * @dataProvider schema_provider
+	 * @dataProvider table_provider
 	 *
-	 * @param string $class      Generated Schema class name (e.g. 'Orders').
+	 * @param string $class      Schema class name (used only to name scratch artifacts).
 	 * @param string $unprefixed Unprefixed EDD table (e.g. 'edd_orders').
 	 */
 	public function test_core_reproduces_edd_table( string $class, string $unprefixed ): void {
@@ -60,7 +67,7 @@ class CapabilityTest extends TestCase {
 
 		$live      = $wpdb->prefix . $unprefixed;
 		$scratch   = $wpdb->prefix . 'eddct_cap_' . $class;
-		$fqcn      = '\\EDDCoreTables\\Schemas\\' . $class;
+		$tmp_class = 'EddctTmp_' . $class;
 		$generator = new SchemaGenerator( $wpdb );
 
 		$this->assertNotEmpty(
@@ -68,36 +75,50 @@ class CapabilityTest extends TestCase {
 			"EDD live table {$live} is missing - is EDD installed?"
 		);
 
-		// Have core render the committed schema's CREATE body and build a scratch table.
-		$schema = new $fqcn();
-		$body   = $schema->get_create_table_string();
-		$this->assertNotEmpty( $body, "{$class} produced an empty CREATE body." );
+		// 1. Introspect the live table into a berlindb/core Schema class (this engine).
+		$src_live = $generator->generate( $live, $tmp_class );
+		$this->load_schema_class( $tmp_class, $src_live );
+
+		// 2. Have core render and create a scratch table from that schema.
+		$fqcn = '\\EDDCoreTables\\Schemas\\' . $tmp_class;
+		$body = ( new $fqcn() )->get_create_table_string();
 
 		$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
 		$wpdb->query( "CREATE TABLE `{$scratch}` ( {$body} )" );
 
-		// Surface the real engine error if core's rendered DDL is rejected, instead of
-		// silently producing an empty introspection that reads as a giant diff.
 		$this->assertNotEmpty(
 			$wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $scratch ) ),
-			"core's CREATE for {$class} was rejected: {$wpdb->last_error}\nDDL:\n{$body}"
+			"core's CREATE for {$live} was rejected by the engine.\nDDL:\n{$body}"
 		);
 
-		// Re-introspect both through the same generator and compare, ignoring only the
-		// physical table name embedded in the doc comment.
+		// 3. Re-introspect the scratch table the same way and compare.
 		$norm = static function ( string $src ) use ( $live, $scratch ): string {
 			return str_replace( array( $live, $scratch ), 'TABLE', $src );
 		};
-
-		$from_live    = $norm( $generator->generate( $live, $class ) );
-		$from_scratch = $norm( $generator->generate( $scratch, $class ) );
+		$src_scratch = $generator->generate( $scratch, $tmp_class );
 
 		$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
 
 		$this->assertSame(
-			$from_live,
-			$from_scratch,
-			"berlindb/core cannot reproduce {$live} exactly (see the diff; e.g. decimal scale, core#244)."
+			$norm( $src_live ),
+			$norm( $src_scratch ),
+			"berlindb/core cannot reproduce {$live} exactly (e.g. decimal scale, core#244)."
 		);
+	}
+
+	/**
+	 * Define a generated Schema class from source, once per PHP process.
+	 *
+	 * @param string $class  Unqualified class name.
+	 * @param string $source Full PHP source emitted by the generator.
+	 */
+	private function load_schema_class( string $class, string $source ): void {
+		if ( class_exists( '\\EDDCoreTables\\Schemas\\' . $class, false ) ) {
+			return;
+		}
+
+		$file = tempnam( sys_get_temp_dir(), 'eddct_' ) . '.php';
+		file_put_contents( $file, $source );
+		require $file;
 	}
 }
