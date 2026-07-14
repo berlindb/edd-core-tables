@@ -86,9 +86,15 @@ class CapabilityTest extends TestCase {
 		$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
 		$wpdb->query( "CREATE TABLE `{$scratch}` ( {$body} )" );
 
+		// Capture the real engine error (WP suppresses $wpdb->last_error in tests).
+		$error = '';
+		if ( $wpdb->dbh instanceof \mysqli ) {
+			$error = mysqli_error( $wpdb->dbh );
+		}
+
 		$this->assertNotEmpty(
 			$wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $scratch ) ),
-			"core's CREATE for {$live} was rejected by the engine.\nDDL:\n{$body}"
+			"core's CREATE for {$live} was rejected: {$error}\nDDL:\n{$body}"
 		);
 
 		// 3. Re-introspect the scratch table the same way and compare.
