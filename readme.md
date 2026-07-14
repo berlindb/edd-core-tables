@@ -41,20 +41,22 @@ parity, not *behavioral* parity.
 
 ## Current status
 
-**Red, by design.** Run against a live EDD install on MySQL 8, it has pinpointed the
-core changes needed before EDD can move onto shared BerlinDB. Two so far:
+**25 of 28 tables reproduce exactly** against a live EDD install on MySQL 8. Two core
+fixes got it there:
 
-1. **[core#245](https://github.com/berlindb/core/issues/245) - NOT NULL TEXT/BLOB gets an
-   illegal `DEFAULT ''`.** `Column::get_default_sql()` omits the default for `JSON` but
-   not for `TEXT`/`BLOB`/`GEOMETRY`, so core emits `mediumtext NOT NULL DEFAULT ''`, which
-   MySQL rejects (ERROR 1101). EDD uses NOT NULL text columns throughout, so **all 28
-   tables currently fail to create** on this alone.
-2. **[core#244](https://github.com/berlindb/core/issues/244) - no `decimal(P,S)` scale.**
-   EDD's money is `decimal(18,9)`; core recreates it as `decimal(18,0)`.
+- **[core#244](https://github.com/berlindb/core/issues/244)** - `decimal(P,S)` scale is
+  now expressible (EDD's money is `decimal(18,9)`; it had been recreated as
+  `decimal(18,0)`).
+- **[core#245](https://github.com/berlindb/core/issues/245)** - core no longer emits an
+  illegal `DEFAULT ''` on NOT NULL TEXT/BLOB/spatial columns (it had blocked *every*
+  EDD table from creating).
 
-These two issues are the reunification punch-list: tables go green as core gains the
-ability to express them. That the suite is fully red is itself the headline finding -
-today's core cannot recreate essentially any EDD table on MySQL.
+The **3 remaining** reds (`emails`, `logs_emails`, `sessions`) are one specific,
+non-fatal behavior: core supplies a `DEFAULT` (`''` or `0`) on NOT NULL *non-LOB*
+columns that EDD leaves defaultless (e.g. `session_key`, `session_expiry`, `email_id`).
+The tables still create; they just aren't byte-identical. This is the remaining item in
+core#245 (let a column express "no default"), and is the current reunification
+punch-list.
 
 ## Staying current
 

@@ -16,17 +16,20 @@
 - CI matrix over EDD **stable** and **master**, and a scheduled workflow that regenerates
   from EDD's latest stable release and opens a PR on any change.
 
-### Known gaps (the reunification punch-list)
+### Status
 
-Confirmed against a live EDD install on MySQL 8. All 28 tables currently fail:
+**25 of 28 tables reproduce exactly** on MySQL 8. Two core fixes landed:
 
-- **[berlindb/core#245](https://github.com/berlindb/core/issues/245):** core emits an
-  illegal `DEFAULT ''` on NOT NULL TEXT/BLOB/GEOMETRY columns (only JSON is guarded), so
-  every EDD table with a NOT NULL text column fails to create (ERROR 1101).
-- **[berlindb/core#244](https://github.com/berlindb/core/issues/244):** core cannot express
-  `decimal(P,S)` scale, so EDD's `decimal(18,9)` money columns become `decimal(18,0)`.
+- **[berlindb/core#244](https://github.com/berlindb/core/issues/244)** - decimal scale is
+  now expressible (`decimal(18,9)` no longer collapses to `decimal(18,0)`).
+- **[berlindb/core#245](https://github.com/berlindb/core/issues/245)** - core no longer
+  emits an illegal `DEFAULT ''` on NOT NULL TEXT/BLOB/spatial columns.
 
-Tables go green as these are fixed in core.
+### Remaining (the punch-list)
+
+- `emails`, `logs_emails`, `sessions` still differ: core supplies a `DEFAULT` on NOT NULL
+  *non-LOB* columns EDD leaves defaultless (`session_key`, `session_expiry`, `email_id`).
+  The tables create fine; they just are not byte-identical. Remaining item in core#245.
 
 ### Notes
 
