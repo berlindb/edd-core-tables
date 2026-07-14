@@ -18,7 +18,9 @@
 // declaration is a fatal ("must be the very first statement in the script").
 
 use BerlinDB\Readiness\Badge;
+use BerlinDB\Readiness\CapabilityReadiness;
 use BerlinDB\Readiness\CoreCapabilities;
+use BerlinDB\Readiness\CoreFeatures;
 use BerlinDB\Readiness\FlagReadiness;
 use BerlinDB\Readiness\Report;
 use BerlinDB\Readiness\SchemaSurface;
@@ -52,14 +54,23 @@ if ( empty( $classes ) ) {
 
 $supported = CoreCapabilities::fromCore();
 $declared  = SchemaSurface::fromClasses( $classes );
-$report    = FlagReadiness::score( 'EDD', $supported, $declared );
+$flags     = FlagReadiness::score( 'EDD', $supported, $declared );
+
+// Relationships / meta: score the curated matrix (imperative in the fork) against core.
+$matrix_file = __DIR__ . '/../.readiness/capabilities.php';
+$matrix      = is_readable( $matrix_file ) ? (array) require $matrix_file : array();
+$features    = CoreFeatures::fromCore();
+$caps        = CapabilityReadiness::score( 'EDD', $features, $matrix );
+
+// One combined behavioral score (flags + relationships/meta) -> one badge.
+$report = Report::combine( 'EDD', $flags, $caps );
 
 // Human-readable summary.
-printf( "\n== EDD behavioral readiness (flags) ==\n" );
-printf( "  fork schemas: %d   core-recognized: %d   declared flags: %d\n\n", count( $classes ), count( $supported ), $report->total() );
-foreach ( $report->rows() as $flag => $row ) {
+printf( "\n== EDD behavioral readiness ==\n" );
+printf( "  fork schemas: %d   flags: %d   relationship/meta: %d\n\n", count( $classes ), $flags->total(), $caps->total() );
+foreach ( $report->rows() as $name => $row ) {
 	$status = ( Report::GAP === $row['status'] ) ? 'GAP' : $row['status'];
-	printf( "  %-16s %-11s %-14s %d\n", $flag, $status, $row['via'], $row['columns'] );
+	printf( "  %-42s %-11s %s\n", $name, $status, $row['via'] );
 }
 printf( "\n  READINESS: %s%%  (%d/%d)\n", $report->percent(), $report->covered(), $report->total() );
 printf( "  GAPS: %s\n\n", $report->is_ready() ? '(none)' : implode( ', ', $report->gaps() ) );

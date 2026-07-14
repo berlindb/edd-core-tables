@@ -6,10 +6,12 @@ Easy Digital Downloads' core database tables, expressed as [`berlindb/core`](htt
 schemas - **auto-generated** by introspecting a live EDD install, and continuously
 tested to measure whether today's shared BerlinDB can faithfully reproduce them.
 
-The **readiness** badge above is the *behavioral* score: of the per-column flags EDD's
-fork declares (`sortable`, `searchable`, `in`, `compare`, ...), how many shared
-`berlindb/core` can express. Computed by [berlindb/readiness](https://github.com/berlindb/readiness);
-a gap is a concrete item on the path to reunifying EDD onto shared core.
+The **readiness** badge above is the *behavioral* score from
+[berlindb/readiness](https://github.com/berlindb/readiness): how much of EDD's fork
+behavior shared `berlindb/core` can express - both its per-column flags (`sortable`,
+`searchable`, `in`, `compare`, ...) and its relationships/meta (the hand-coded JOINs and
+`*meta` tables, mapped in [`.readiness/capabilities.php`](.readiness/capabilities.php)).
+A gap is a concrete item on the path to reunifying EDD onto shared core.
 
 ## Why this exists
 
