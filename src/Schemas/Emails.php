@@ -24,7 +24,7 @@ class Emails extends Schema {
 	/** @var array<int, array<string, mixed>> */
 	public $columns = array(
 			array( 'name' => 'id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
-			array( 'name' => 'email_id', 'type' => 'varchar', 'length' => '32' ),
+			array( 'name' => 'email_id', 'type' => 'varchar', 'length' => '32', 'default' => false ),
 			array( 'name' => 'context', 'type' => 'varchar', 'length' => '32', 'default' => 'order' ),
 			array( 'name' => 'sender', 'type' => 'varchar', 'length' => '32', 'default' => 'edd' ),
 			array( 'name' => 'recipient', 'type' => 'varchar', 'length' => '32', 'default' => 'customer' ),

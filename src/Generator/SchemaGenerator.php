@@ -193,15 +193,19 @@ PHP;
 			$parts[] = "'allow_null' => true";
 		}
 
-		if ( $this->is_lob_type( $parsed['type'] ) ) {
-			// TEXT/BLOB/JSON cannot carry a non-NULL DEFAULT in MySQL. A nullable one
-			// still needs an explicit `default null` (else core supplies its own ''
-			// default, which MySQL rejects); a NOT NULL one gets no default at all.
-			if ( $nullable ) {
-				$parts[] = "'default' => null";
+		// An auto_increment column never carries a default (core omits it already), so
+		// only non-auto columns emit any default at all.
+		if ( false === stripos( (string) $col->EXTRA, 'auto_increment' ) ) {
+			if ( $this->is_lob_type( $parsed['type'] ) ) {
+				// TEXT/BLOB/JSON cannot carry a non-NULL DEFAULT in MySQL. A nullable one
+				// still needs an explicit `default null` (else core supplies its own ''
+				// default, which MySQL rejects); a NOT NULL one gets no default at all.
+				if ( $nullable ) {
+					$parts[] = "'default' => null";
+				}
+			} else {
+				$parts = array_merge( $parts, $this->render_default( $col->COLUMN_DEFAULT, $nullable ) );
 			}
-		} else {
-			$parts = array_merge( $parts, $this->render_default( $col->COLUMN_DEFAULT, $nullable ) );
 		}
 
 		return "\t\t\tarray( " . implode( ', ', $parts ) . " ),";
@@ -218,9 +222,11 @@ PHP;
 	 */
 	private function render_default( $default, bool $nullable ): array {
 		// No default recorded. MySQL reports this as SQL NULL (PHP null); MariaDB
-		// reports the literal string "NULL" - treat both the same.
+		// reports the literal string "NULL" - treat both the same. A nullable column
+		// gets DEFAULT NULL; a NOT NULL column with no default is declared with
+		// 'default' => false so core omits the clause (rather than supplying '' / 0).
 		if ( null === $default || 'NULL' === strtoupper( trim( (string) $default ) ) ) {
-			return $nullable ? array( "'default' => null" ) : array();
+			return array( $nullable ? "'default' => null" : "'default' => false" );
 		}
 
 		// Function/expression defaults (e.g. current_timestamp()) are rendered raw so
