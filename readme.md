@@ -1,0 +1,72 @@
+# edd-core-tables
+
+Easy Digital Downloads' core database tables, expressed as [`berlindb/core`](https://github.com/berlindb/core)
+schemas - **auto-generated** by introspecting a live EDD install, and continuously
+tested to measure whether today's shared BerlinDB can faithfully reproduce them.
+
+## Why this exists
+
+EDD does not consume `berlindb/core`. Its `EDD\Database\*` layer is a hand-copied,
+first-generation *fork* of BerlinDB frozen inside the plugin. A long-term goal is to
+reunify EDD onto shared BerlinDB. This repo measures the distance to that goal:
+
+- It declares each EDD core table as a `berlindb/core` schema - **generated**, never
+  hand-copied, so it cannot drift from EDD.
+- A **capability test** asks the only question that matters for reunification: *can
+  today's `berlindb/core` recreate this table exactly?* Where it can't, that's a
+  concrete gap to close in core.
+
+## How it works
+
+1. **Generate** (`bin/generate-schemas.php`) - boots a live EDD install, then reads each
+   `edd_*` table from `information_schema` and emits a `berlindb/core` Schema class into
+   [`src/Schemas/`](src/Schemas/). `information_schema` is used (not core's own
+   `Schema::from_table()`) because it faithfully carries decimal scale, `unsigned`, and
+   index prefix lengths.
+2. **Capability test** (`tests/CapabilityTest.php`) - for each generated schema, core
+   creates a scratch table from it, that table is re-introspected, and the result is
+   compared column-for-column and index-for-index against EDD's live table. A match
+   means core can express that table exactly.
+
+The test is **strict**: there is no allowlist. Any column or index core cannot reproduce
+turns the suite red.
+
+### Structural parity only
+
+Generation reads the DDL, so it captures columns and indexes. It intentionally does
+**not** capture the higher-level semantics EDD hand-codes (the `sortable` / `searchable`
+/ `in` / `date_query` / `validate` / `transition` / `cache_key` flags, meta wiring,
+relationships) - those are invisible to `SHOW CREATE TABLE`. This proves *structural*
+parity, not *behavioral* parity.
+
+## Current status
+
+**Red, by design** - it has found a real core gap:
+
+> **`berlindb/core` cannot express `decimal(P,S)` scale** ([berlindb/core#244](https://github.com/berlindb/core/issues/244)).
+> EDD stores money as `decimal(18,9)`; core recreates it as `decimal(18,0)`, destroying
+> every fractional amount. This is a hard reunification blocker until core gains a scale
+> concept. The suite goes green once it is fixed.
+
+## Staying current
+
+A scheduled workflow polls EDD's latest **stable release** and **master**, regenerates
+the schemas, and opens a PR when EDD's schema changes - so this repo tracks EDD
+automatically and flags the day EDD adds something core must accommodate. CI runs the
+capability test against both EDD stable and master.
+
+## Running locally
+
+```bash
+composer install
+# point core at a local checkout while developing (do not commit):
+composer config repositories.berlindb-core path ../path/to/berlindb-core && composer update berlindb/core
+bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 latest
+composer test
+```
+
+Regenerate the schemas against a WordPress install that has EDD active:
+
+```bash
+wp eval-file bin/generate-schemas.php
+```

@@ -1,0 +1,7 @@
+/vendor/
+/berlindb-core/
+/edd/
+/composer.lock
+/.phpunit.result.cache
+/.phpunit.cache/
+/phpunit.xml
