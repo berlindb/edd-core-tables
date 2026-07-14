@@ -28,7 +28,7 @@ class Customers extends Schema {
 			array( 'name' => 'email', 'type' => 'varchar', 'length' => '100', 'default' => '' ),
 			array( 'name' => 'name', 'type' => 'varchar', 'length' => '255', 'default' => '' ),
 			array( 'name' => 'status', 'type' => 'varchar', 'length' => '20', 'default' => '' ),
-			array( 'name' => 'purchase_value', 'type' => 'decimal', 'length' => '18,9', 'unsigned' => false, 'default' => '0.000000000' ),
+			array( 'name' => 'purchase_value', 'type' => 'decimal', 'length' => '18', 'scale' => '9', 'unsigned' => false, 'default' => '0.000000000' ),
 			array( 'name' => 'purchase_count', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'date_created', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),
 			array( 'name' => 'date_modified', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),

@@ -171,6 +171,10 @@ PHP;
 		if ( '' !== $parsed['length'] ) {
 			$parts[] = "'length' => '" . $parsed['length'] . "'";
 		}
+		// A decimal's scale is a separate key ($length is the precision).
+		if ( '' !== $parsed['scale'] ) {
+			$parts[] = "'scale' => '" . $parsed['scale'] . "'";
+		}
 		// For numeric types emit `unsigned` EXPLICITLY (true or false). BerlinDB's
 		// Column defaults numeric columns to unsigned, so a signed column that omitted
 		// the flag would be silently widened to unsigned when core recreates it.
@@ -281,22 +285,32 @@ PHP;
 	private function parse_type( string $column_type ): array {
 		$type     = $column_type;
 		$length   = '';
+		$scale    = '';
 		$unsigned = false;
 
 		if ( false !== stripos( $column_type, 'unsigned' ) ) {
 			$unsigned = true;
 		}
 
-		if ( preg_match( '/^([a-z]+)\s*\(([^)]+)\)/i', $column_type, $m ) ) {
-			$type   = strtolower( $m[1] );
-			$length = $m[2];
-		} elseif ( preg_match( '/^([a-z]+)/i', $column_type, $m ) ) {
+		if ( preg_match( '/^([a-z]+)\s*(?:\(([^)]+)\))?/i', $column_type, $m ) ) {
 			$type = strtolower( $m[1] );
+			$args = $m[2] ?? '';
+			$comma = strpos( $args, ',' );
+
+			// Only decimal-family types split their args into precision,scale; an
+			// enum/set value list also contains commas but is not a length.
+			if ( ( false !== $comma ) && in_array( $type, array( 'decimal', 'numeric', 'float', 'double' ), true ) ) {
+				$length = substr( $args, 0, $comma );
+				$scale  = substr( $args, $comma + 1 );
+			} else {
+				$length = $args;
+			}
 		}
 
 		return array(
 			'type'     => $type,
 			'length'   => $length,
+			'scale'    => $scale,
 			'unsigned' => $unsigned,
 		);
 	}
