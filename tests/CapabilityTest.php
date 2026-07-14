@@ -76,6 +76,13 @@ class CapabilityTest extends TestCase {
 		$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
 		$wpdb->query( "CREATE TABLE `{$scratch}` ( {$body} )" );
 
+		// Surface the real engine error if core's rendered DDL is rejected, instead of
+		// silently producing an empty introspection that reads as a giant diff.
+		$this->assertNotEmpty(
+			$wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $scratch ) ),
+			"core's CREATE for {$class} was rejected: {$wpdb->last_error}\nDDL:\n{$body}"
+		);
+
 		// Re-introspect both through the same generator and compare, ignoring only the
 		// physical table name embedded in the doc comment.
 		$norm = static function ( string $src ) use ( $live, $scratch ): string {
