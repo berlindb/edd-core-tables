@@ -27,7 +27,7 @@ class OrderItems extends Schema {
 			array( 'name' => 'parent', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'order_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'product_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
-			array( 'name' => 'product_name', 'type' => 'text', 'default' => '' ),
+			array( 'name' => 'product_name', 'type' => 'text' ),
 			array( 'name' => 'price_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'allow_null' => true, 'default' => null ),
 			array( 'name' => 'cart_index', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'type', 'type' => 'varchar', 'length' => '20', 'default' => 'download' ),

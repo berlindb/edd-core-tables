@@ -189,7 +189,16 @@ PHP;
 			$parts[] = "'allow_null' => true";
 		}
 
-		$parts = array_merge( $parts, $this->render_default( $col->COLUMN_DEFAULT, $nullable ) );
+		if ( $this->is_lob_type( $parsed['type'] ) ) {
+			// TEXT/BLOB/JSON cannot carry a non-NULL DEFAULT in MySQL. A nullable one
+			// still needs an explicit `default null` (else core supplies its own ''
+			// default, which MySQL rejects); a NOT NULL one gets no default at all.
+			if ( $nullable ) {
+				$parts[] = "'default' => null";
+			}
+		} else {
+			$parts = array_merge( $parts, $this->render_default( $col->COLUMN_DEFAULT, $nullable ) );
+		}
 
 		return "\t\t\tarray( " . implode( ', ', $parts ) . " ),";
 	}
@@ -304,6 +313,23 @@ PHP;
 		return in_array(
 			$type,
 			array( 'tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'decimal', 'float', 'double', 'numeric', 'bit' ),
+			true
+		);
+	}
+
+	/**
+	 * Whether a type is a large-object type (TEXT/BLOB/JSON/GEOMETRY) that cannot carry
+	 * a DEFAULT in MySQL.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $type Lowercased BerlinDB type.
+	 * @return bool
+	 */
+	private function is_lob_type( string $type ): bool {
+		return in_array(
+			$type,
+			array( 'tinytext', 'text', 'mediumtext', 'longtext', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'json', 'geometry' ),
 			true
 		);
 	}

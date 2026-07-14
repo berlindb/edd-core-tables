@@ -27,7 +27,7 @@ class Notes extends Schema {
 			array( 'name' => 'object_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'object_type', 'type' => 'varchar', 'length' => '20', 'default' => '' ),
 			array( 'name' => 'user_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
-			array( 'name' => 'content', 'type' => 'longtext', 'default' => '' ),
+			array( 'name' => 'content', 'type' => 'longtext' ),
 			array( 'name' => 'date_created', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),
 			array( 'name' => 'date_modified', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),
 			array( 'name' => 'uuid', 'type' => 'varchar', 'length' => '100', 'default' => '' ),

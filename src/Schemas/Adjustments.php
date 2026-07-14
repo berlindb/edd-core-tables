@@ -32,7 +32,7 @@ class Adjustments extends Schema {
 			array( 'name' => 'scope', 'type' => 'varchar', 'length' => '20', 'default' => 'all' ),
 			array( 'name' => 'amount_type', 'type' => 'varchar', 'length' => '20', 'default' => '' ),
 			array( 'name' => 'amount', 'type' => 'decimal', 'length' => '18,9', 'unsigned' => false, 'default' => '0.000000000' ),
-			array( 'name' => 'description', 'type' => 'longtext', 'default' => '' ),
+			array( 'name' => 'description', 'type' => 'longtext' ),
 			array( 'name' => 'max_uses', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'use_count', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'once_per_customer', 'type' => 'int', 'length' => '1', 'unsigned' => false, 'default' => '0' ),
