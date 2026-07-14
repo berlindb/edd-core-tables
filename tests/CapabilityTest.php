@@ -84,12 +84,15 @@ class CapabilityTest extends TestCase {
 		$body = ( new $fqcn() )->get_create_table_string();
 
 		$wpdb->query( "DROP TABLE IF EXISTS `{$scratch}`" );
-		$wpdb->query( "CREATE TABLE `{$scratch}` ( {$body} )" );
 
-		// Capture the real engine error (WP suppresses $wpdb->last_error in tests).
 		$error = '';
-		if ( $wpdb->dbh instanceof \mysqli ) {
-			$error = mysqli_error( $wpdb->dbh );
+		try {
+			$result = $wpdb->query( "CREATE TABLE `{$scratch}` ( {$body} )" );
+			if ( false === $result ) {
+				$error = $wpdb->last_error;
+			}
+		} catch ( \Throwable $e ) {
+			$error = $e->getMessage();
 		}
 
 		$this->assertNotEmpty(
