@@ -41,12 +41,20 @@ parity, not *behavioral* parity.
 
 ## Current status
 
-**Red, by design** - it has found a real core gap:
+**Red, by design.** Run against a live EDD install on MySQL 8, it has pinpointed the
+core changes needed before EDD can move onto shared BerlinDB. Two so far:
 
-> **`berlindb/core` cannot express `decimal(P,S)` scale** ([berlindb/core#244](https://github.com/berlindb/core/issues/244)).
-> EDD stores money as `decimal(18,9)`; core recreates it as `decimal(18,0)`, destroying
-> every fractional amount. This is a hard reunification blocker until core gains a scale
-> concept. The suite goes green once it is fixed.
+1. **[core#245](https://github.com/berlindb/core/issues/245) - NOT NULL TEXT/BLOB gets an
+   illegal `DEFAULT ''`.** `Column::get_default_sql()` omits the default for `JSON` but
+   not for `TEXT`/`BLOB`/`GEOMETRY`, so core emits `mediumtext NOT NULL DEFAULT ''`, which
+   MySQL rejects (ERROR 1101). EDD uses NOT NULL text columns throughout, so **all 28
+   tables currently fail to create** on this alone.
+2. **[core#244](https://github.com/berlindb/core/issues/244) - no `decimal(P,S)` scale.**
+   EDD's money is `decimal(18,9)`; core recreates it as `decimal(18,0)`.
+
+These two issues are the reunification punch-list: tables go green as core gains the
+ability to express them. That the suite is fully red is itself the headline finding -
+today's core cannot recreate essentially any EDD table on MySQL.
 
 ## Staying current
 

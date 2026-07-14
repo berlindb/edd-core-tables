@@ -16,11 +16,17 @@
 - CI matrix over EDD **stable** and **master**, and a scheduled workflow that regenerates
   from EDD's latest stable release and opens a PR on any change.
 
-### Known gaps
+### Known gaps (the reunification punch-list)
 
-- **Red on [berlindb/core#244](https://github.com/berlindb/core/issues/244):** core cannot
-  express `decimal(P,S)` scale, so EDD's `decimal(18,9)` money columns are recreated as
-  `decimal(18,0)`. The suite goes green when core gains a scale concept.
+Confirmed against a live EDD install on MySQL 8. All 28 tables currently fail:
+
+- **[berlindb/core#245](https://github.com/berlindb/core/issues/245):** core emits an
+  illegal `DEFAULT ''` on NOT NULL TEXT/BLOB/GEOMETRY columns (only JSON is guarded), so
+  every EDD table with a NOT NULL text column fails to create (ERROR 1101).
+- **[berlindb/core#244](https://github.com/berlindb/core/issues/244):** core cannot express
+  `decimal(P,S)` scale, so EDD's `decimal(18,9)` money columns become `decimal(18,0)`.
+
+Tables go green as these are fixed in core.
 
 ### Notes
 
