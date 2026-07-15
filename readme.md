@@ -1,17 +1,23 @@
 # edd-core-tables
 
-![EDD readiness](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/berlindb/edd-core-tables/master/.readiness/edd.json)
+[![behavioral](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/berlindb/edd-core-tables/master/.readiness/edd.json "Behavioral readiness: can shared berlindb/core RUN EDD's queries? Column flags plus the relationship/meta patterns a query needs.")![modeling](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/berlindb/edd-core-tables/master/.readiness/edd-modeling.json "Modeling readiness: can core MODEL EDD's schema with faithful relationships? Adds patterns like polymorphic-ownership traversal that queries don't need but a faithful schema does.")](https://github.com/berlindb/readiness)
 
 Easy Digital Downloads' core database tables, expressed as [`berlindb/core`](https://github.com/berlindb/core)
 schemas - **auto-generated** by introspecting a live EDD install, and continuously
 tested to measure whether today's shared BerlinDB can faithfully reproduce them.
 
-The **readiness** badge above is the *behavioral* score from
-[berlindb/readiness](https://github.com/berlindb/readiness): how much of EDD's fork
-behavior shared `berlindb/core` can express - both its per-column flags (`sortable`,
-`searchable`, `in`, `compare`, ...) and its relationships/meta (the hand-coded JOINs and
-`*meta` tables, mapped in [`.readiness/capabilities.php`](.readiness/capabilities.php)).
-A gap is a concrete item on the path to reunifying EDD onto shared core.
+The **readiness** chips above (from [berlindb/readiness](https://github.com/berlindb/readiness),
+hover for details) score how much of EDD's fork shared `berlindb/core` can express:
+
+- **behavioral** - can core *run* EDD's queries? Its per-column flags (`sortable`,
+  `searchable`, `in`, `compare`, ...) plus the relationship/meta patterns a query needs.
+- **modeling** - can core *model* EDD's schema with faithful relationships? Same, plus
+  patterns queries don't need but a faithful schema does - e.g. polymorphic-ownership
+  traversal, which core's relationships can't yet scope (no value condition), the one
+  open reunification item.
+
+The relationship/meta patterns are the curated, cited inventory in
+[`.readiness/capabilities.php`](.readiness/capabilities.php).
 
 ## Why this exists
 

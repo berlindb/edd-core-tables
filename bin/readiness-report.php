@@ -56,30 +56,36 @@ $supported = CoreCapabilities::fromCore();
 $declared  = SchemaSurface::fromClasses( $classes );
 $flags     = FlagReadiness::score( 'EDD', $supported, $declared );
 
-// Relationships / meta: score the curated matrix (imperative in the fork) against core.
+// Relationships / meta: score the curated matrix (imperative in the fork) against core,
+// split into two dimensions - can core RUN EDD's queries (behavioral) vs can core MODEL
+// EDD's schema with faithful relationships (modeling). Flags count toward both.
 $matrix_file = __DIR__ . '/../.readiness/capabilities.php';
 $matrix      = is_readable( $matrix_file ) ? (array) require $matrix_file : array();
 $features    = CoreFeatures::fromCore();
-$caps        = CapabilityReadiness::score( 'EDD', $features, $matrix );
 
-// One combined behavioral score (flags + relationships/meta) -> one badge.
-$report = Report::combine( 'EDD', $flags, $caps );
+$behavioral = Report::combine( 'EDD', $flags, CapabilityReadiness::score( 'EDD', $features, $matrix, 'behavioral' ) );
+$modeling   = Report::combine( 'EDD', $flags, CapabilityReadiness::score( 'EDD', $features, $matrix, 'modeling' ) );
 
-// Human-readable summary.
-printf( "\n== EDD behavioral readiness ==\n" );
-printf( "  fork schemas: %d   flags: %d   relationship/meta: %d\n\n", count( $classes ), $flags->total(), $caps->total() );
-foreach ( $report->rows() as $name => $row ) {
+// Human-readable summary (modeling view is the superset, so it shows every row).
+printf( "\n== EDD reunification readiness ==\n" );
+printf( "  fork schemas: %d   flags: %d   relationship/meta entries: %d\n\n", count( $classes ), $flags->total(), count( $matrix ) );
+foreach ( $modeling->rows() as $name => $row ) {
 	$status = ( Report::GAP === $row['status'] ) ? 'GAP' : $row['status'];
-	printf( "  %-42s %-11s %s\n", $name, $status, $row['via'] );
+	printf( "  %-46s %-11s %s\n", $name, $status, $row['via'] );
 }
-printf( "\n  READINESS: %s%%  (%d/%d)\n", $report->percent(), $report->covered(), $report->total() );
-printf( "  GAPS: %s\n\n", $report->is_ready() ? '(none)' : implode( ', ', $report->gaps() ) );
+printf( "\n  BEHAVIORAL: %s%%  (%d/%d)   MODELING: %s%%  (%d/%d)\n",
+	$behavioral->percent(), $behavioral->covered(), $behavioral->total(),
+	$modeling->percent(), $modeling->covered(), $modeling->total()
+);
+printf( "  MODELING GAPS: %s\n\n", $modeling->is_ready() ? '(none)' : implode( ', ', $modeling->gaps() ) );
 
-// Write the shields endpoint badge (dashboard mode: always write, never fail on a gap -
-// the badge colour communicates a regression; CI's PR surfaces the change).
+// Two shields endpoint badges (dashboard mode: always write, never fail on a gap - the
+// colour communicates a regression, CI's PR surfaces the change). Rendered as adjacent
+// chips with tooltips in the README.
 $out = __DIR__ . '/../.readiness';
 if ( ! is_dir( $out ) ) {
 	mkdir( $out, 0777, true );
 }
-file_put_contents( $out . '/edd.json', Badge::toJson( $report ) );
-printf( "  wrote %s/edd.json\n\n", $out );
+file_put_contents( $out . '/edd.json', Badge::toJson( $behavioral, 'behavioral' ) );
+file_put_contents( $out . '/edd-modeling.json', Badge::toJson( $modeling, 'modeling' ) );
+printf( "  wrote %s/edd.json (behavioral) + edd-modeling.json\n\n", $out );
