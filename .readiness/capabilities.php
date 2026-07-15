@@ -16,13 +16,12 @@
  *   already counted in the flag score. They are NOT re-listed here (no double-counting).
  *
  * - POLYMORPHIC OWNERSHIP (object_id + object_type on edd_notes, edd_logs, edd_logs_emails,
- *   edd_order_transactions, edd_order_adjustments): EDD's QUERIES port fine - object_id and
- *   object_type are two ordinary column filters core supports. But core relationships are
- *   pure column->column with no value condition (Kern/Relationship.php has no where/scope),
- *   so this ownership cannot be modeled as ONE core has_many/belongs_to for get_related()
- *   traversal (a join on object_id alone would cross object types). Recorded below as a
- *   relationship-MODELING limitation, not a behavioral gap - a candidate core feature
- *   (conditioned relationships). See the `relationship.conditioned` entry.
+ *   edd_order_transactions, edd_order_adjustments): a child table shared across parent types
+ *   via an object_id + object_type pair. Now EXPRESSIBLE by core: a relationship may carry a
+ *   fixed `condition` (e.g. object_type => 'order'), so this ownership models as ONE
+ *   conditioned has_many/belongs_to whose join/EXISTS is scoped to the right type - shipped in
+ *   berlindb/core eedada8 (relationship.conditioned). See the entry below. (EDD's raw queries
+ *   already ported via column filters, so this was a MODELING gap, never a behavioral one.)
  *
  * - EDD's fork CANNOT orderby a meta key (Query::parse_orderby has no meta_value branch);
  *   core's store meta path CAN (get_store_meta_orderby_sql, #204 Phase C) - core exceeds
@@ -114,17 +113,17 @@ return array(
 	),
 
 	/*
-	 * Relationship-MODELING limitation (kept as an entry so it is scored/tracked, not
-	 * hidden). Polymorphic ownership is expressible as core column filters TODAY, so this
-	 * is not a behavioral gap; but modeling it as one relationship for traversal needs a
-	 * value condition core relationships do not have. `requires` points at a feature core
-	 * does NOT currently provide, so it scores as a gap - the one open reunification item.
+	 * Relationship-MODELING dimension: modeling polymorphic ownership as ONE relationship
+	 * (for get_related traversal / declarative filters) rather than raw column filters. Now
+	 * supported - core relationships carry a fixed `condition` (relationship.conditioned,
+	 * shipped eedada8) that scopes the join/EXISTS to the right object_type. Kept as its own
+	 * modeling-scope entry so a regression (core dropping the feature) reopens it.
 	 */
 	array(
 		'name'     => 'polymorphic ownership traversal (object_id + object_type)',
 		'kind'     => 'relationship-modeling',
 		'requires' => 'relationship.conditioned',
 		'scope'    => 'modeling',
-		'note'     => 'notes/logs/logs_emails/order_transactions/order_adjustments; queries port as column filters (behavioral: fine), but core relationships have no value condition (Relationship.php) to scope object_type - modeling gap, candidate core feature',
+		'note'     => 'notes/logs/logs_emails/order_transactions/order_adjustments; modeled as a conditioned has_many/belongs_to (condition: object_type => <type>) - berlindb/core eedada8',
 	),
 );
