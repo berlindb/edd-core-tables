@@ -16,7 +16,8 @@
  * @package EDDCoreTables
  */
 
-declare( strict_types = 1 );
+// No declare(strict_types) here: wp eval-file evals this file, where a strict_types
+// declaration cannot be the first statement of the script.
 
 use EDDCoreTables\Generator\SchemaGenerator;
 
