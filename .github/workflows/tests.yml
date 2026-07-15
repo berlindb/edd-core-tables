@@ -28,10 +28,12 @@ jobs:
     name: PHP ${{ matrix.php }} / EDD ${{ matrix.edd }}
     runs-on: ubuntu-latest
     needs: resolve
-    # The EDD stable release is the authoritative parity gate. EDD master builds
-    # differently (no bundled libraries / build script), so it can't always be run
-    # from a bare checkout - keep it informational rather than blocking.
-    continue-on-error: ${{ matrix.edd == 'master' }}
+    # The EDD stable release is the authoritative parity gate. EDD's `main` branch is
+    # its 3.x development line (an early-warning signal for upcoming schema changes) -
+    # it can legitimately introduce a schema core cannot yet express, so keep it
+    # informational rather than blocking. (The repo's `master` branch is a stale,
+    # pre-3.x legacy line with no src/ - do NOT use it.)
+    continue-on-error: ${{ matrix.edd == 'main' }}
 
     services:
       mysql:
@@ -50,7 +52,7 @@ jobs:
       fail-fast: false
       matrix:
         php: [ '8.1', '8.3' ]
-        edd: [ 'stable', 'master' ]
+        edd: [ 'stable', 'main' ]
 
     steps:
       - name: Checkout plugin
@@ -71,7 +73,7 @@ jobs:
           if [ "${{ matrix.edd }}" = "stable" ]; then
             echo "ref=${{ needs.resolve.outputs.stable }}" >> "$GITHUB_OUTPUT"
           else
-            echo "ref=master" >> "$GITHUB_OUTPUT"
+            echo "ref=main" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Checkout EDD @ ${{ steps.edd.outputs.ref }}
