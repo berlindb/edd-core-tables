@@ -23,8 +23,8 @@ class LogsApiRequests extends Schema {
 
 	/** @var array<int, array<string, mixed>> */
 	public $columns = array(
-			array( 'name' => 'id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
-			array( 'name' => 'user_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'id', 'type' => 'bigint', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
+			array( 'name' => 'user_id', 'type' => 'bigint', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'api_key', 'type' => 'varchar', 'length' => '32', 'default' => 'public' ),
 			array( 'name' => 'token', 'type' => 'varchar', 'length' => '32', 'default' => '' ),
 			array( 'name' => 'version', 'type' => 'varchar', 'length' => '32', 'default' => '' ),
