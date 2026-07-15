@@ -35,5 +35,7 @@ return array(
 	'OrderTransactions' => 'edd_order_transactions',
 	'Ordermeta' => 'edd_ordermeta',
 	'Orders' => 'edd_orders',
+	'PaymentTokens' => 'edd_payment_tokens',
 	'Sessions' => 'edd_sessions',
+	'TaxRates' => 'edd_tax_rates',
 );

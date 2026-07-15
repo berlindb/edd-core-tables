@@ -23,7 +23,7 @@ class Notifications extends Schema {
 
 	/** @var array<int, array<string, mixed>> */
 	public $columns = array(
-			array( 'name' => 'id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
+			array( 'name' => 'id', 'type' => 'bigint', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
 			array( 'name' => 'remote_id', 'type' => 'varchar', 'length' => '20', 'allow_null' => true, 'default' => null ),
 			array( 'name' => 'source', 'type' => 'varchar', 'length' => '20', 'default' => 'api' ),
 			array( 'name' => 'title', 'type' => 'text' ),
@@ -33,7 +33,7 @@ class Notifications extends Schema {
 			array( 'name' => 'conditions', 'type' => 'longtext', 'allow_null' => true, 'default' => null ),
 			array( 'name' => 'start', 'type' => 'datetime', 'allow_null' => true, 'default' => null ),
 			array( 'name' => 'end', 'type' => 'datetime', 'allow_null' => true, 'default' => null ),
-			array( 'name' => 'dismissed', 'type' => 'tinyint', 'length' => '1', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'dismissed', 'type' => 'tinyint', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'date_created', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),
 			array( 'name' => 'date_updated', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),
 	);

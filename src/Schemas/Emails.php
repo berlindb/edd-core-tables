@@ -23,7 +23,7 @@ class Emails extends Schema {
 
 	/** @var array<int, array<string, mixed>> */
 	public $columns = array(
-			array( 'name' => 'id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
+			array( 'name' => 'id', 'type' => 'bigint', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
 			array( 'name' => 'email_id', 'type' => 'varchar', 'length' => '32', 'default' => false ),
 			array( 'name' => 'context', 'type' => 'varchar', 'length' => '32', 'default' => 'order' ),
 			array( 'name' => 'sender', 'type' => 'varchar', 'length' => '32', 'default' => 'edd' ),
@@ -31,7 +31,7 @@ class Emails extends Schema {
 			array( 'name' => 'subject', 'type' => 'text' ),
 			array( 'name' => 'heading', 'type' => 'text', 'allow_null' => true, 'default' => null ),
 			array( 'name' => 'content', 'type' => 'longtext' ),
-			array( 'name' => 'status', 'type' => 'tinyint', 'length' => '1', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'status', 'type' => 'tinyint', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'date_created', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),
 			array( 'name' => 'date_modified', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),
 	);
