@@ -43,10 +43,13 @@ tests_add_filter(
 		if ( function_exists( 'edd_install_component_database_tables' ) ) {
 			edd_install_component_database_tables();
 		}
-		if ( class_exists( '\\EDD\\Database\\Tables\\Sessions' ) ) {
-			$sessions = new \EDD\Database\Tables\Sessions();
-			if ( ! $sessions->exists() ) {
-				$sessions->install();
+		foreach ( array( 'PaymentTokens', 'Sessions', 'TaxRates' ) as $table ) {
+			$class = 'EDD\\Database\\Tables\\' . $table;
+			if ( class_exists( $class ) ) {
+				$instance = new $class();
+				if ( ! $instance->exists() ) {
+					$instance->install();
+				}
 			}
 		}
 	}

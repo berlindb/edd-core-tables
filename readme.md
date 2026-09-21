@@ -25,8 +25,8 @@ EDD does not consume `berlindb/core`. Its `EDD\Database\*` layer is a hand-copie
 first-generation *fork* of BerlinDB frozen inside the plugin. A long-term goal is to
 reunify EDD onto shared BerlinDB. This repo measures the distance to that goal:
 
-- It declares each EDD core table as a `berlindb/core` schema - **generated**, never
-  hand-copied, so it cannot drift from EDD.
+- It declares each EDD core table as a `berlindb/core` schema generated from a live
+  install. A live-inventory test catches tables missing from the committed manifest.
 - A **capability test** asks the only question that matters for reunification: *can
   today's `berlindb/core` recreate this table exactly?* Where it can't, that's a
   concrete gap to close in core.
@@ -38,10 +38,10 @@ reunify EDD onto shared BerlinDB. This repo measures the distance to that goal:
    [`src/Schemas/`](src/Schemas/). `information_schema` is used (not core's own
    `Schema::from_table()`) because it faithfully carries decimal scale, `unsigned`, and
    index prefix lengths.
-2. **Capability test** (`tests/CapabilityTest.php`) - for each generated schema, core
-   creates a scratch table from it, that table is re-introspected, and the result is
-   compared column-for-column and index-for-index against EDD's live table. A match
-   means core can express that table exactly.
+2. **Capability test** (`tests/CapabilityTest.php`) - first compares the manifest with
+   the live `edd_*` table inventory. For each table, it generates a schema from the
+   live definition, asks core to create a scratch table, then compares the two live
+   structures. A match means core can express that table exactly.
 
 The test is **strict**: there is no allowlist. Any column or index core cannot reproduce
 turns the suite red.
@@ -56,29 +56,18 @@ parity, not *behavioral* parity.
 
 ## Current status
 
-**25 of 28 tables reproduce exactly** against a live EDD install on MySQL 8. Two core
-fixes got it there:
-
-- **[core#244](https://github.com/berlindb/core/issues/244)** - `decimal(P,S)` scale is
-  now expressible (EDD's money is `decimal(18,9)`; it had been recreated as
-  `decimal(18,0)`).
-- **[core#245](https://github.com/berlindb/core/issues/245)** - core no longer emits an
-  illegal `DEFAULT ''` on NOT NULL TEXT/BLOB/spatial columns (it had blocked *every*
-  EDD table from creating).
-
-The **3 remaining** reds (`emails`, `logs_emails`, `sessions`) are one specific,
-non-fatal behavior: core supplies a `DEFAULT` (`''` or `0`) on NOT NULL *non-LOB*
-columns that EDD leaves defaultless (e.g. `session_key`, `session_expiry`, `email_id`).
-The tables still create; they just aren't byte-identical. This is the remaining item in
-core#245 (let a column express "no default"), and is the current reunification
-punch-list.
+With EDD 3.7.0, MariaDB 10.2, and the pending
+[core PR #259](https://github.com/berlindb/core/pull/259), all **30 live EDD core
+tables** reproduce exactly in the local capability suite. The EDD test workflow also
+checks MySQL 8.0; its result remains the release gate for that engine. Structural
+parity does not establish behavioral parity with EDD's fork.
 
 ## Staying current
 
-A scheduled workflow polls EDD's latest **stable release** and **master**, regenerates
-the schemas, and opens a PR when EDD's schema changes - so this repo tracks EDD
-automatically and flags the day EDD adds something core must accommodate. CI runs the
-capability test against both EDD stable and master.
+A scheduled workflow regenerates schemas from EDD's latest **stable release** and opens
+a PR when they change. CI tests stable as a gate and EDD's `main` branch as an
+informational early warning. The live-inventory assertion prevents a newly added
+table from silently falling outside the capability suite.
 
 ## Running locally
 

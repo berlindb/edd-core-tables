@@ -34,8 +34,8 @@ $schemas_dir = __DIR__ . '/../src/Schemas';
 
 /*
  * Make sure EDD's tables exist. edd_install_component_database_tables() is EDD's own
- * "used by unit tests and tools" installer; edd_sessions is registered separately by
- * the DB session manager, so install it directly too.
+ * "used by unit tests and tools" installer does not cover every EDD core table.
+ * Install the independently registered tables explicitly before discovery.
  */
 if ( function_exists( 'edd_setup_components' ) ) {
 	edd_setup_components();
@@ -44,10 +44,13 @@ if ( function_exists( 'edd_setup_components' ) ) {
 		edd_install_component_database_tables();
 	}
 
-	if ( class_exists( '\\EDD\\Database\\Tables\\Sessions' ) ) {
-		$sessions = new \EDD\Database\Tables\Sessions();
-		if ( ! $sessions->exists() ) {
-			$sessions->install();
+	foreach ( array( 'PaymentTokens', 'Sessions', 'TaxRates' ) as $table ) {
+		$class = 'EDD\\Database\\Tables\\' . $table;
+		if ( class_exists( $class ) ) {
+			$instance = new $class();
+			if ( ! $instance->exists() ) {
+				$instance->install();
+			}
 		}
 	}
 }
