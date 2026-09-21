@@ -33,6 +33,30 @@ use Yoast\WPTestUtils\WPIntegration\TestCase;
 class CapabilityTest extends TestCase {
 
 	/**
+	 * The manifest must cover every live EDD core table, including tables outside
+	 * the component installer. CI loads EDD core without add-ons.
+	 *
+	 * @since 0.1.0
+	 */
+	public function test_manifest_covers_live_edd_tables(): void {
+		global $wpdb;
+
+		$like     = $wpdb->esc_like( $wpdb->prefix . 'edd_' ) . '%';
+		$live     = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $like ) );
+		$expected = array_map(
+			static function ( string $table ) use ( $wpdb ): string {
+				return $wpdb->prefix . $table;
+			},
+			array_values( self::manifest() )
+		);
+
+		sort( $live );
+		sort( $expected );
+
+		$this->assertSame( $live, $expected, 'Regenerate schemas for every live EDD core table.' );
+	}
+
+	/**
 	 * class name => unprefixed EDD table (e.g. 'Orders' => 'edd_orders').
 	 *
 	 * @return array<string, string>
