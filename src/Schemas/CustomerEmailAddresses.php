@@ -23,8 +23,8 @@ class CustomerEmailAddresses extends Schema {
 
 	/** @var array<int, array<string, mixed>> */
 	public $columns = array(
-			array( 'name' => 'id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
-			array( 'name' => 'customer_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'id', 'type' => 'bigint', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
+			array( 'name' => 'customer_id', 'type' => 'bigint', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'type', 'type' => 'varchar', 'length' => '20', 'default' => 'secondary' ),
 			array( 'name' => 'status', 'type' => 'varchar', 'length' => '20', 'default' => 'active' ),
 			array( 'name' => 'email', 'type' => 'varchar', 'length' => '100', 'default' => '' ),
