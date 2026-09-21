@@ -23,7 +23,7 @@ class TaxRates extends Schema {
 
 	/** @var array<int, array<string, mixed>> */
 	public $columns = array(
-			array( 'name' => 'id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
+			array( 'name' => 'id', 'type' => 'bigint', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
 			array( 'name' => 'country', 'type' => 'varchar', 'length' => '64', 'allow_null' => true, 'default' => null ),
 			array( 'name' => 'state', 'type' => 'varchar', 'length' => '64', 'allow_null' => true, 'default' => null ),
 			array( 'name' => 'amount', 'type' => 'decimal', 'length' => '18', 'scale' => '9', 'unsigned' => false, 'default' => '0.000000000' ),

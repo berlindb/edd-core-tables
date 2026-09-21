@@ -23,10 +23,10 @@ class Notes extends Schema {
 
 	/** @var array<int, array<string, mixed>> */
 	public $columns = array(
-			array( 'name' => 'id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
-			array( 'name' => 'object_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'id', 'type' => 'bigint', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
+			array( 'name' => 'object_id', 'type' => 'bigint', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'object_type', 'type' => 'varchar', 'length' => '20', 'default' => '' ),
-			array( 'name' => 'user_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'user_id', 'type' => 'bigint', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'content', 'type' => 'longtext' ),
 			array( 'name' => 'date_created', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),
 			array( 'name' => 'date_modified', 'type' => 'datetime', 'default' => 'CURRENT_TIMESTAMP' ),

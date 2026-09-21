@@ -23,16 +23,16 @@ class OrderItems extends Schema {
 
 	/** @var array<int, array<string, mixed>> */
 	public $columns = array(
-			array( 'name' => 'id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
-			array( 'name' => 'parent', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
-			array( 'name' => 'order_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
-			array( 'name' => 'product_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'id', 'type' => 'bigint', 'unsigned' => true, 'extra' => 'auto_increment', 'primary' => true ),
+			array( 'name' => 'parent', 'type' => 'bigint', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'order_id', 'type' => 'bigint', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'product_id', 'type' => 'bigint', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'product_name', 'type' => 'text' ),
-			array( 'name' => 'price_id', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'allow_null' => true, 'default' => null ),
-			array( 'name' => 'cart_index', 'type' => 'bigint', 'length' => '20', 'unsigned' => true, 'default' => '0' ),
+			array( 'name' => 'price_id', 'type' => 'bigint', 'unsigned' => true, 'allow_null' => true, 'default' => null ),
+			array( 'name' => 'cart_index', 'type' => 'bigint', 'unsigned' => true, 'default' => '0' ),
 			array( 'name' => 'type', 'type' => 'varchar', 'length' => '20', 'default' => 'download' ),
 			array( 'name' => 'status', 'type' => 'varchar', 'length' => '20', 'default' => 'pending' ),
-			array( 'name' => 'quantity', 'type' => 'int', 'length' => '11', 'unsigned' => false, 'default' => '0' ),
+			array( 'name' => 'quantity', 'type' => 'int', 'unsigned' => false, 'default' => '0' ),
 			array( 'name' => 'amount', 'type' => 'decimal', 'length' => '18', 'scale' => '9', 'unsigned' => false, 'default' => '0.000000000' ),
 			array( 'name' => 'subtotal', 'type' => 'decimal', 'length' => '18', 'scale' => '9', 'unsigned' => false, 'default' => '0.000000000' ),
 			array( 'name' => 'discount', 'type' => 'decimal', 'length' => '18', 'scale' => '9', 'unsigned' => false, 'default' => '0.000000000' ),
