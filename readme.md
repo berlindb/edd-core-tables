@@ -56,11 +56,10 @@ parity, not *behavioral* parity.
 
 ## Current status
 
-With EDD 3.7.0, MariaDB 10.2, and the pending
-[core PR #259](https://github.com/berlindb/core/pull/259), all **30 live EDD core
-tables** reproduce exactly in the local capability suite. The EDD test workflow also
-checks MySQL 8.0; its result remains the release gate for that engine. Structural
-parity does not establish behavioral parity with EDD's fork.
+With EDD 3.7.0, all **30 live EDD core tables** reproduce exactly in CI on MySQL 8.0
+against core `master` (PHP 8.1 and 8.3). The local MariaDB 10.2 suite also passes
+against [core PR #259](https://github.com/berlindb/core/pull/259). Structural parity
+does not establish behavioral parity with EDD's fork.
 
 ## Staying current
 
